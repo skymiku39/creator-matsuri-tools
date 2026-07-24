@@ -1,4 +1,7 @@
-# 台詞 JSON 匯出工具（給自己用）
+# 台詞 JSON 匯出工具
+
+> 所屬倉庫：[creator-matsuri-tools](https://github.com/skymiku39/creator-matsuri-tools)  
+> 連動編輯器：[creator-matsuri](https://github.com/skymiku39/creator-matsuri)
 
 把編輯器匯出的 **專案 JSON** 反編成：
 
@@ -16,7 +19,7 @@
 或命令列：
 
 ```bash
-cd tools/dialogue-json-export
+cd dialogue-json-export
 npm install
 npm run export -- "D:\path\to\booth.json"
 ```
@@ -27,10 +30,16 @@ npm run export -- "D:\path\to\booth.json"
 node src/cli.mjs ".\booth.json" "D:\my-exports"
 ```
 
+內建自測：
+
+```bash
+npm test
+```
+
 ## 輸出內容
 
 ```
-tools/dialogue-json-export/exports/
+exports/
   01_01攤位_20260724_183000/
     台詞.txt      ← 純文字
     流程圖.png    ← 可直接貼文件
