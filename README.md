@@ -15,7 +15,12 @@ creator-matsuri/
 
 | 資料夾 | 說明 |
 |--------|------|
-| [dialogue-json-export](./dialogue-json-export/) | 將編輯器匯出的 JSON 反編成純文字＋不重疊流程圖 |
+| [dialogue-json-export](./dialogue-json-export/) | 將編輯器匯出的 JSON 反編成純文字＋不重疊流程圖（含說話者／人物設定） |
+
+與編輯器 v1.0 對齊的 JSON 欄位：
+
+- `meta.speakerName`、`meta.characters[]`
+- 節點 `data.speakerId`／`data.speakerName`
 
 ## 在主專案裡更新本倉庫
 
