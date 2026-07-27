@@ -24,7 +24,7 @@ function truncate(s, max = 36) {
   return `${t.slice(0, max - 1)}…`
 }
 
-function nodeLabel(n) {
+function nodeLabel(n, meta = {}) {
   const d = n.data ?? {}
   const kind = d.kind ?? n.type ?? 'message'
   const title = String(d.title ?? '').trim()
@@ -44,11 +44,26 @@ function nodeLabel(n) {
   if (kind === 'end') {
     return `${kindZh}\\n${truncate(title || '結束', 28)}`
   }
-  const body = text || title || n.id
-  if (title && text && title !== text) {
-    return `${kindZh}｜${truncate(title, 16)}\\n${truncate(text, 32)}`
+
+  let speaker = ''
+  if (kind === 'message' || kind === 'url') {
+    const custom = String(d.speakerName ?? '').trim()
+    if (custom) {
+      speaker = custom
+    } else if (d.speakerId && Array.isArray(meta.characters)) {
+      const found = meta.characters.find((c) => c.id === d.speakerId)
+      speaker = String(found?.name ?? '').trim()
+    } else {
+      speaker = String(meta.speakerName ?? '').trim()
+    }
   }
-  return `${kindZh}\\n${truncate(body, 36)}`
+
+  const body = text || title || n.id
+  const speakerPrefix = speaker ? `${truncate(speaker, 10)}｜` : ''
+  if (title && text && title !== text) {
+    return `${kindZh}\\n${speakerPrefix}${truncate(title, 14)}\\n${truncate(text, 28)}`
+  }
+  return `${kindZh}\\n${speakerPrefix}${truncate(body, 32)}`
 }
 
 function safeId(id) {
@@ -96,7 +111,7 @@ export function projectToDot(project) {
     const kind = d.kind ?? n.type ?? 'message'
     const style = KIND_STYLE[kind] ?? KIND_STYLE.message
     const id = safeId(n.id)
-    const label = escLabel(nodeLabel(n))
+    const label = escLabel(nodeLabel(n, meta))
     lines.push(
       `  ${id} [label="${label}", shape=${style.shape}, fillcolor="${style.fill}", color="${style.stroke}"];`,
     )

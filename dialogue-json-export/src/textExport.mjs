@@ -15,7 +15,32 @@ function nodeText(n) {
   const title = String(d.title ?? '').trim()
   const text = String(d.text ?? '').trim()
   const note = String(d.note ?? '').trim()
-  return { title, text, note, kind: d.kind ?? n.type ?? 'message' }
+  const speakerId = String(d.speakerId ?? '').trim()
+  const speakerName = String(d.speakerName ?? '').trim()
+  return {
+    title,
+    text,
+    note,
+    speakerId,
+    speakerName,
+    kind: d.kind ?? n.type ?? 'message',
+  }
+}
+
+function resolveSpeaker(meta, data) {
+  if (data.speakerName) return data.speakerName
+  if (data.speakerId && Array.isArray(meta.characters)) {
+    const found = meta.characters.find((c) => c.id === data.speakerId)
+    const name = String(found?.name ?? '').trim()
+    if (name) return name
+  }
+  return (
+    String(meta.speakerName ?? '').trim() ||
+    String(meta.boothName ?? '')
+      .replace(/攤位$/, '')
+      .trim() ||
+    ''
+  )
 }
 
 function childrenOf(id, edges) {
@@ -35,12 +60,26 @@ export function projectToPlainText(project) {
   const byId = new Map(nodes.map((n) => [n.id, n]))
   const targets = new Set(edges.map((e) => e.target))
   const roots = nodes.filter((n) => !targets.has(n.id))
+  const defaultSpeaker = resolveSpeaker(meta, {})
 
   const lines = []
   lines.push(`# ${meta.boothName || meta.boothId || '未命名攤位'}`)
   lines.push(`攤位編號：${meta.boothId ?? ''}`)
-  if (meta.speakerName) lines.push(`說話者：${meta.speakerName}`)
+  if (defaultSpeaker) lines.push(`預設說話者：${defaultSpeaker}`)
   lines.push(`語系：${meta.locale ?? 'zh_TW'}`)
+
+  const characters = Array.isArray(meta.characters) ? meta.characters : []
+  if (characters.length > 0) {
+    lines.push('')
+    lines.push('## 人物設定')
+    for (const c of characters) {
+      const name = String(c.name ?? '').trim()
+      if (!name) continue
+      const note = String(c.note ?? '').trim()
+      lines.push(note ? `- ${name}：${note}` : `- ${name}`)
+    }
+  }
+
   lines.push('')
   lines.push('---')
   lines.push('')
@@ -58,11 +97,20 @@ export function projectToPlainText(project) {
     const node = byId.get(nodeId)
     if (!node) return
 
-    const { title, text, note, kind } = nodeText(node)
+    const data = nodeText(node)
+    const { title, text, note, kind } = data
     const pad = prefix
     const label = KIND_LABEL[kind] ?? kind
     const head = title || text || nodeId
     lines.push(`${pad}【${label}】${head}`)
+
+    if (kind === 'message' || kind === 'url') {
+      const speaker = resolveSpeaker(meta, data)
+      if (speaker) {
+        lines.push(`${pad}  說話者：${speaker}`)
+      }
+    }
+
     if (text && text !== title) {
       lines.push(`${pad}  ${text}`)
     }
@@ -107,7 +155,6 @@ export function projectToPlainText(project) {
     }
   }
 
-  // 未走到的孤立節點
   const orphans = nodes.filter((n) => !visited.has(n.id))
   if (orphans.length > 0) {
     lines.push('---')
@@ -115,8 +162,13 @@ export function projectToPlainText(project) {
     lines.push('## 未連上主幹的節點')
     lines.push('')
     for (const n of orphans) {
-      const { title, text, kind } = nodeText(n)
+      const data = nodeText(n)
+      const { title, text, kind } = data
       lines.push(`- 【${KIND_LABEL[kind] ?? kind}】${title || text || n.id}`)
+      if (kind === 'message' || kind === 'url') {
+        const speaker = resolveSpeaker(meta, data)
+        if (speaker) lines.push(`  說話者：${speaker}`)
+      }
       if (text && text !== title) lines.push(`  ${text}`)
     }
   }

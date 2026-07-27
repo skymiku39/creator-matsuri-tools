@@ -9,7 +9,7 @@
   },
   "scripts": {
     "export": "node src/cli.mjs",
-    "test": "node src/cli.mjs ./fixtures/simpleFaq.json"
+    "test": "node src/textExport.test.mjs && node src/cli.mjs ./fixtures/simpleFaq.json"
   },
   "dependencies": {
     "@viz-js/viz": "^3.24.0",

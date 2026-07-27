@@ -36,6 +36,16 @@ node src/cli.mjs ".\booth.json" "D:\my-exports"
 npm test
 ```
 
+## 說話者／人物設定
+
+支援編輯器匯出的：
+
+- `meta.speakerName`：預設說話者
+- `meta.characters[]`：人物設定（id／name／note）
+- 節點 `data.speakerId`／`data.speakerName`：本句覆寫
+
+純文字會輸出人物表與每句「說話者：」；流程圖節點標籤也會帶說話者名稱。
+
 ## 輸出內容
 
 ```
