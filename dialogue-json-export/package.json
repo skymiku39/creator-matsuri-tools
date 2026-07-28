@@ -1,7 +1,7 @@
 {
   "name": "dialogue-json-export",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "將攤位台詞 JSON 反編成純文字與不重疊流程圖",
   "bin": {
