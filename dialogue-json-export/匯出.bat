@@ -6,7 +6,10 @@ title 台詞 JSON 匯出工具
 if "%~1"=="" (
   echo.
   echo  請把「編輯器匯出的 JSON」拖到這個 bat 上，
-  echo  或：匯出.bat 路徑\專案.json
+  echo  或：匯出.bat "D:\完整路徑\booth_01_flow.json"
+  echo.
+  echo  注意：相對路徑是相對「本工具資料夾」，
+  echo  檔案若在別處請用完整路徑或直接拖曳。
   echo.
   pause
   exit /b 1

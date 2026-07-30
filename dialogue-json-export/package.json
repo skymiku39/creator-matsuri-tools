@@ -9,7 +9,8 @@
   },
   "scripts": {
     "export": "node src/cli.mjs",
-    "test": "node src/textExport.test.mjs && node src/cli.mjs ./fixtures/simpleFaq.json"
+    "test": "node src/textExport.test.mjs && node src/cli.mjs ./fixtures/simpleFaq.json",
+    "export:booth-sample": "node src/cli.mjs ../../booth_01_flow.json"
   },
   "dependencies": {
     "@viz-js/viz": "^3.24.0",

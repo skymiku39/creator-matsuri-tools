@@ -20,6 +20,7 @@ import {
 } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseProject } from './parseProject.mjs'
 import { projectToPlainText } from './textExport.mjs'
 import { projectToDot, renderDot } from './flowchart.mjs'
 
@@ -29,11 +30,15 @@ function usage() {
   console.log(`用法：
   node src/cli.mjs <專案.json> [輸出根目錄]
 
-範例：
-  node src/cli.mjs ./booth_01.json
-  node src/cli.mjs ./booth_01.json ./exports
+請給「完整路徑」或相對於「本工具目錄」的路徑。
+檔案可在任何資料夾；編輯器匯出的 booth_XX_flow.json 皆可。
 
-或把 JSON 拖到「匯出.bat」上。
+範例：
+  node src/cli.mjs ./fixtures/simpleFaq.json
+  node src/cli.mjs "D:\\path\\to\\booth_01_flow.json"
+  npm run export -- "D:\\path\\to\\booth_01_flow.json"
+
+或把 JSON 拖到「匯出.bat」上（拖曳會帶完整路徑，最省事）。
 `)
 }
 
@@ -49,26 +54,6 @@ function stamp() {
   const d = new Date()
   const p = (n) => String(n).padStart(2, '0')
   return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`
-}
-
-function parseProject(raw) {
-  const data = JSON.parse(raw)
-  if (!data || typeof data !== 'object') throw new Error('JSON 不是物件')
-  if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
-    throw new Error('缺少 nodes／edges（請使用編輯器匯出的專案 JSON）')
-  }
-  const meta = data.meta && typeof data.meta === 'object' ? data.meta : {}
-  return {
-    version: data.version ?? 1,
-    meta: {
-      boothId: String(meta.boothId ?? ''),
-      boothName: String(meta.boothName ?? ''),
-      locale: String(meta.locale ?? 'zh_TW'),
-      speakerName: meta.speakerName != null ? String(meta.speakerName) : undefined,
-    },
-    nodes: data.nodes,
-    edges: data.edges,
-  }
 }
 
 async function main() {

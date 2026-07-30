@@ -13,22 +13,32 @@
 ## 怎麼用（最快）
 
 1. 首次在本資料夾執行一次：`npm install`
-2. 把 `xxx.json` **拖到 `匯出.bat` 上**
+2. 把編輯器匯出的 `booth_XX_flow.json` **拖到 `匯出.bat` 上**（拖曳會帶完整路徑）
 3. 到本工具目錄下的 `exports/<攤位_時間>/` 看結果
 
-或命令列：
+命令列請給**絕對路徑**，或相對「本工具目錄」的路徑（檔案不必放進本資料夾）：
 
 ```bash
 cd dialogue-json-export
 npm install
-npm run export -- "D:\path\to\booth.json"
+npm run export -- "D:\path\to\booth_01_flow.json"
+```
+
+若 JSON 在工作區根目錄（與 `creator-matsuri-tools` 同層）：
+
+```bash
+npm run export:booth-sample
+# 等同：node src/cli.mjs ../../booth_01_flow.json
 ```
 
 指定輸出根目錄：
 
 ```bash
-node src/cli.mjs ".\booth.json" "D:\my-exports"
+node src/cli.mjs "D:\path\to\booth.json" "D:\my-exports"
 ```
+
+常見錯誤：`找不到檔案：...\dialogue-json-export\booth_01_flow.json`  
+→ 相對路徑是相對本工具目錄；請改絕對路徑，或把檔案拖到 `匯出.bat`。
 
 內建自測：
 

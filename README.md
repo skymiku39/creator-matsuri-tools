@@ -22,6 +22,15 @@ creator-matsuri/
 - `meta.speakerName`、`meta.characters[]`
 - 節點 `data.speakerId`／`data.speakerName`
 
+測試編輯器匯出檔（檔案可在任意路徑）：
+
+```bash
+cd dialogue-json-export
+npm install
+npm run export -- "完整路徑\booth_01_flow.json"
+# 或拖到 匯出.bat
+```
+
 ## 在主專案裡更新本倉庫
 
 ```bash
