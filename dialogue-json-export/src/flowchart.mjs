@@ -2,6 +2,8 @@
  * 以 Graphviz（WASM）排版，splines 曲線避免邊重疊覆蓋，輸出 SVG／PNG。
  */
 
+import { endDisplayTitle, resolveEndAction } from './endAction.mjs'
+
 const KIND_STYLE = {
   message: { fill: '#d8f3e8', stroke: '#2f6f5e', shape: 'box' },
   choiceMenu: { fill: '#ffedd5', stroke: '#b45309', shape: 'box' },
@@ -24,7 +26,7 @@ function truncate(s, max = 36) {
   return `${t.slice(0, max - 1)}…`
 }
 
-function nodeLabel(n, meta = {}) {
+function nodeLabel(n, meta = {}, ctx = { byId: new Map(), edges: [] }) {
   const d = n.data ?? {}
   const kind = d.kind ?? n.type ?? 'message'
   const title = String(d.title ?? '').trim()
@@ -42,7 +44,9 @@ function nodeLabel(n, meta = {}) {
     return `${kindZh}\\n${truncate(title || '對話選項', 28)}`
   }
   if (kind === 'end') {
-    return `${kindZh}\\n${truncate(title || '結束', 28)}`
+    const action = resolveEndAction(n, ctx.byId, ctx.edges)
+    const mark = action === 'menu' ? '↩ ' : '■ '
+    return `${kindZh}\\n${mark}${truncate(endDisplayTitle(n, action), 26)}`
   }
 
   let speaker = ''
@@ -77,6 +81,7 @@ function safeId(id) {
 export function projectToDot(project) {
   const { meta, nodes, edges } = project
   const title = escLabel(meta.boothName || `攤位${meta.boothId || ''}`)
+  const ctx = { byId: new Map(nodes.map((n) => [n.id, n])), edges }
 
   const lines = []
   lines.push('digraph DialogueFlow {')
@@ -111,9 +116,14 @@ export function projectToDot(project) {
     const kind = d.kind ?? n.type ?? 'message'
     const style = KIND_STYLE[kind] ?? KIND_STYLE.message
     const id = safeId(n.id)
-    const label = escLabel(nodeLabel(n, meta))
+    const label = escLabel(nodeLabel(n, meta, ctx))
+    // 回到選單的結束節點用選項的藍色，和「結束對話」區分
+    const stroke =
+      kind === 'end' && resolveEndAction(n, ctx.byId, ctx.edges) === 'menu'
+        ? KIND_STYLE.choice.stroke
+        : style.stroke
     lines.push(
-      `  ${id} [label="${label}", shape=${style.shape}, fillcolor="${style.fill}", color="${style.stroke}"];`,
+      `  ${id} [label="${label}", shape=${style.shape}, fillcolor="${style.fill}", color="${stroke}"];`,
     )
   }
 
