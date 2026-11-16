@@ -28,3 +28,37 @@ assert.match(viaText, /## 人物設定/)
 assert.match(viaText, /- 攤位店員：主線接待/)
 
 console.log('speaker export tests passed')
+
+// 結束行為：fixture 的離開選項接「結束對話」，一般選項沒接結束節點 → 預設回到選單
+assert.match(text, /【結束】→ 結束對話/)
+assert.match(text, /未接結束節點，預設回到選單/)
+assert.match(dot, /結束\\\\n■ 結束對話/)
+
+// 明確指定優先於預設；舊版標題「結束／返回」不再照抄
+const flipped = structuredClone(project)
+for (const n of flipped.nodes) {
+  if (n.data.kind === 'end') {
+    n.data.endAction = 'menu'
+    n.data.title = '結束／返回'
+  }
+}
+const flippedText = projectToPlainText(flipped)
+assert.match(flippedText, /【結束】→ 回到選單/)
+assert.doesNotMatch(flippedText, /結束／返回/)
+assert.match(projectToDot(flipped), /結束\\\\n↩ 回到選單/)
+
+// 舊版 JSON（沒有 endAction）：依所屬選項推定
+const legacy = structuredClone(project)
+for (const n of legacy.nodes) {
+  if (n.data.kind === 'end') delete n.data.endAction
+}
+assert.match(projectToPlainText(legacy), /【結束】→ 結束對話/)
+
+// 自訂標題保留，並附上行為
+const custom = structuredClone(project)
+for (const n of custom.nodes) {
+  if (n.data.kind === 'end') n.data.title = '送客'
+}
+assert.match(projectToPlainText(custom), /【結束】送客（→ 結束對話）/)
+
+console.log('end action export tests passed')

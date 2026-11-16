@@ -2,6 +2,12 @@
  * 將編輯器專案 JSON 轉成可讀純文字（依流程走訪，含分支）。
  */
 
+import {
+  END_ACTION_LABEL,
+  endDisplayTitle,
+  resolveEndAction,
+} from './endAction.mjs'
+
 const KIND_LABEL = {
   message: '對話',
   choiceMenu: '選單',
@@ -101,6 +107,22 @@ export function projectToPlainText(project) {
     const { title, text, note, kind } = data
     const pad = prefix
     const label = KIND_LABEL[kind] ?? kind
+
+    if (kind === 'end') {
+      // 結束節點：寫出走完後的行為，不沿用可能過時的標題
+      const action = resolveEndAction(node, byId, edges)
+      const shown = endDisplayTitle(node, action)
+      const actionText = END_ACTION_LABEL[action]
+      lines.push(
+        shown === actionText
+          ? `${pad}【${label}】→ ${actionText}`
+          : `${pad}【${label}】${shown}（→ ${actionText}）`,
+      )
+      if (note) lines.push(`${pad}  〔備註〕${note}`)
+      lines.push('')
+      return
+    }
+
     const head = title || text || nodeId
     lines.push(`${pad}【${label}】${head}`)
 
@@ -120,7 +142,9 @@ export function projectToPlainText(project) {
 
     const outs = childrenOf(nodeId, edges)
     if (outs.length === 0) {
-      lines.push(`${pad}  → （無後續）`)
+      // 沒接結束節點：寫出編輯器模擬時會採用的預設行為
+      const fallback = END_ACTION_LABEL[resolveEndAction(node, byId, edges)]
+      lines.push(`${pad}  → （未接結束節點，預設${fallback}）`)
       lines.push('')
       return
     }
